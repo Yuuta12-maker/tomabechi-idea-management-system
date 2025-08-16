@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* カスタムスタイル */
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  /* アニメーション用のカスタムクラス */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  /* グラフ可視化用のスタイル */
+  .graph-node {
+    @apply cursor-pointer transition-all duration-200;
+  }
+
+  .graph-node:hover {
+    @apply scale-110;
+  }
+
+  .graph-edge {
+    @apply transition-all duration-200;
+  }
+
+  /* エネルギーレベル表示用のスタイル */
+  .energy-level-1 { @apply text-gray-400; }
+  .energy-level-2 { @apply text-blue-400; }
+  .energy-level-3 { @apply text-green-400; }
+  .energy-level-4 { @apply text-yellow-400; }
+  .energy-level-5 { @apply text-red-400; }
+
+  /* 関係性タイプ用のスタイル */
+  .relation-similar { @apply text-blue-500; }
+  .relation-derived { @apply text-green-500; }
+  .relation-combined { @apply text-purple-500; }
+  .relation-inspired { @apply text-yellow-500; }
+  .relation-conflicts { @apply text-red-500; }
+  .relation-supports { @apply text-indigo-500; }
+}
+
+/* スクロールバーのカスタマイズ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+}
+
+/* フォーカス時のアウトライン調整 */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+}
