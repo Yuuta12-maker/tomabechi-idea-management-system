@@ -3,6 +3,7 @@ import { Session } from '@supabase/supabase-js'
 import { X, Zap, ArrowRight, CheckCircle } from 'lucide-react'
 import { Idea } from '@/types'
 import { IdeaService } from '@/services/ideaService'
+import { AbstractionAnalyzer } from '@/services/abstractionAnalyzer'
 import LoadingSpinner from '@/components/UI/LoadingSpinner'
 
 interface IdeaUnificationProps {
@@ -203,6 +204,45 @@ const IdeaUnification: React.FC<IdeaUnificationProps> = ({
                 新しい統合されたアイデアを生成します。元のアイデアは完全単調性により
                 保持され、新しい関係性が構築されます。
               </p>
+              
+              {/* 抽象度予測表示 */}
+              {selectedIdeaObjects.length === 2 && (
+                <div className="mt-3 pt-3 border-t border-blue-200">
+                  <h5 className="text-sm font-medium text-blue-800 mb-2">抽象度予測</h5>
+                  {(() => {
+                    const idea1 = selectedIdeaObjects[0]
+                    const idea2 = selectedIdeaObjects[1]
+                    const abs1 = AbstractionAnalyzer.analyzeAbstractionLevel(idea1)
+                    const abs2 = AbstractionAnalyzer.analyzeAbstractionLevel(idea2)
+                    const predictedAbs = AbstractionAnalyzer.calculateUnificationAbstraction(idea1, idea2)
+                    
+                    return (
+                      <div className="text-xs text-blue-700 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span>{idea1.title.substring(0, 15)}...</span>
+                          <span className="bg-blue-200 px-2 py-1 rounded">Lv.{abs1.level}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>{idea2.title.substring(0, 15)}...</span>
+                          <span className="bg-blue-200 px-2 py-1 rounded">Lv.{abs2.level}</span>
+                        </div>
+                        <div className="flex items-center justify-center pt-2">
+                          <ArrowRight className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex items-center justify-between bg-blue-100 p-2 rounded">
+                          <span className="font-medium">統合結果予測</span>
+                          <span className="bg-purple-200 px-2 py-1 rounded font-bold">
+                            Lv.{predictedAbs.level}
+                          </span>
+                        </div>
+                        <p className="text-xs text-blue-600 mt-1">
+                          {AbstractionAnalyzer.getAbstractionDescription(predictedAbs.level)}
+                        </p>
+                      </div>
+                    )
+                  })()}
+                </div>
+              )}
             </div>
             
             <div className="flex justify-end space-x-3">

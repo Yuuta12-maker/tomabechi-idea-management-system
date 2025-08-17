@@ -9,7 +9,8 @@ import {
   Settings, 
   Plus,
   Menu,
-  LogOut
+  LogOut,
+  Layers
 } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { ViewState } from '@/types'
@@ -54,6 +55,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: Network,
       viewType: 'graph',
       active: viewState.currentView === 'graph'
+    },
+    {
+      name: '抽象度可視化',
+      icon: Layers,
+      viewType: 'abstraction',
+      active: viewState.currentView === 'abstraction'
     },
     {
       name: '分析レポート',

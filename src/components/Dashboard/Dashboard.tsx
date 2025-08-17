@@ -3,6 +3,7 @@ import { Session } from '@supabase/supabase-js'
 import Sidebar from './Sidebar'
 import IdeaList from '@/components/Ideas/IdeaList'
 import IdeaGraph from '@/components/Visualization/IdeaGraph'
+import AbstractionGraph from '@/components/Visualization/AbstractionGraph'
 import Analytics from '@/components/Analytics/Analytics'
 import Settings from '@/components/Settings/Settings'
 import { ViewState } from '@/types'
@@ -26,6 +27,13 @@ const MainView: React.FC<{
       )}
       {viewState.currentView === 'graph' && (
         <IdeaGraph 
+          session={session}
+          viewState={viewState}
+          onViewStateChange={onViewStateChange}
+        />
+      )}
+      {(viewState.currentView as any) === 'abstraction' && (
+        <AbstractionGraph 
           session={session}
           viewState={viewState}
           onViewStateChange={onViewStateChange}
