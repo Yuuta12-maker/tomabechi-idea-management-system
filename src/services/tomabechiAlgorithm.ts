@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
-import type { Idea, Arc, DGNode, NodeType, RelationType } from '@/types'
+import type { Idea, Arc, NodeType } from '@/types'
+import { RelationType } from '@/types'
 
 export class TomabechiSupabaseUnifier {
   private userId: string
@@ -240,7 +241,7 @@ export class TomabechiSupabaseUnifier {
         const result = await this.copyWithCompArcs(idea1Id)
         
         // 関係性をデータベースに記録
-        await this.createIdeaRelation(idea1Id, idea2Id, 'combined', 1.0)
+        await this.createIdeaRelation(idea1Id, idea2Id, RelationType.COMBINED, 1.0)
         
         return result
       }
@@ -410,7 +411,7 @@ export class TomabechiSupabaseUnifier {
     }
 
     // 関係性を記録
-    await this.createIdeaRelation(newIdea.id, baseIdeaId, 'derived', 0.8)
+    await this.createIdeaRelation(newIdea.id, baseIdeaId, RelationType.DERIVED, 0.8)
 
     return this.convertToIdea(newIdea)
   }

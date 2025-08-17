@@ -114,7 +114,7 @@ export interface NotificationSettings {
 
 // UI状態管理用の型
 export interface ViewState {
-  currentView: 'list' | 'grid' | 'graph' | 'timeline';
+  currentView: 'list' | 'grid' | 'graph' | 'timeline' | 'analytics' | 'settings';
   selectedIdeas: string[];
   searchQuery: string;
   activeFilters: FilterState;

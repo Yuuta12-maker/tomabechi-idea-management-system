@@ -13,11 +13,13 @@ import {
   MoreVertical,
   Edit,
   Archive,
-  Link
+  Link,
+  GitMerge
 } from 'lucide-react'
 import { ViewState, Idea } from '@/types'
 import { IdeaService } from '@/services/ideaService'
 import IdeaForm from './IdeaForm'
+import IdeaUnification from './IdeaUnification'
 import LoadingSpinner from '@/components/UI/LoadingSpinner'
 import FilterPanel from '@/components/UI/FilterPanel'
 import { formatDistanceToNow } from 'date-fns'
@@ -40,6 +42,8 @@ const IdeaList: React.FC<IdeaListProps> = ({
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null)
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
   const [showFilter, setShowFilter] = useState(false)
+  const [showUnification, setShowUnification] = useState(false)
+  const [selectedForUnification, setSelectedForUnification] = useState<string[]>([])
   const [ideaService] = useState(() => new IdeaService(session.user.id))
 
   const loadIdeas = async () => {
@@ -128,6 +132,23 @@ const IdeaList: React.FC<IdeaListProps> = ({
     setOpenDropdownId(null)
   }
 
+  const handleSelectForUnification = (ideaId: string) => {
+    setSelectedForUnification(prev => {
+      if (prev.includes(ideaId)) {
+        return prev.filter(id => id !== ideaId)
+      } else if (prev.length < 2) {
+        return [...prev, ideaId]
+      } else {
+        return [prev[1], ideaId] // Replace oldest selection
+      }
+    })
+  }
+
+  const handleUnificationSuccess = () => {
+    setSelectedForUnification([])
+    loadIdeas()
+  }
+
   const getEnergyLevelColor = (level: number) => {
     const colors = {
       1: 'text-gray-500 bg-gray-100',
@@ -166,13 +187,36 @@ const IdeaList: React.FC<IdeaListProps> = ({
                 ユーザーID: {session.user.id}
               </p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              新しいアイデア
-            </button>
+            <div className="flex items-center space-x-3">
+              {selectedForUnification.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">
+                    {selectedForUnification.length}/2 選択中
+                  </span>
+                  <button
+                    onClick={() => setShowUnification(true)}
+                    disabled={selectedForUnification.length !== 2}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  >
+                    <GitMerge className="h-4 w-4 mr-2" />
+                    統合実行
+                  </button>
+                  <button
+                    onClick={() => setSelectedForUnification([])}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    キャンセル
+                  </button>
+                </div>
+              )}
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                新しいアイデア
+              </button>
+            </div>
           </div>
         </div>
 
@@ -255,56 +299,76 @@ const IdeaList: React.FC<IdeaListProps> = ({
         ) : (
           <div className="space-y-4">
             {ideas.map((idea) => (
-              <div key={idea.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <div key={idea.id} className={`bg-white rounded-lg shadow-sm border transition-all ${
+                selectedForUnification.includes(idea.id) 
+                  ? 'border-purple-300 ring-2 ring-purple-100' 
+                  : 'border-gray-200 hover:shadow-md'
+              } p-6`}>
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        {idea.title}
-                      </h3>
-                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getEnergyLevelColor(idea.energy_level)}`}>
-                        <Zap className="h-3 w-3 mr-1" />
-                        {idea.energy_level}
+                  <div className="flex items-start space-x-3 flex-1">
+                    <button
+                      onClick={() => handleSelectForUnification(idea.id)}
+                      className={`mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                        selectedForUnification.includes(idea.id)
+                          ? 'bg-purple-600 border-purple-600 text-white'
+                          : 'border-gray-300 hover:border-purple-400'
+                      }`}
+                    >
+                      {selectedForUnification.includes(idea.id) && (
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {idea.title}
+                        </h3>
+                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getEnergyLevelColor(idea.energy_level)}`}>
+                          <Zap className="h-3 w-3 mr-1" />
+                          {idea.energy_level}
+                        </div>
                       </div>
-                    </div>
-                    
-                    {idea.content && (
-                      <p className="text-gray-600 mb-3 line-clamp-2">
-                        {idea.content}
-                      </p>
-                    )}
+                      
+                      {idea.content && (
+                        <p className="text-gray-600 mb-3 line-clamp-2">
+                          {idea.content}
+                        </p>
+                      )}
 
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {formatDistanceToNow(new Date(idea.created_at), { 
-                          addSuffix: true, 
-                          locale: ja 
-                        })}
-                      </div>
-                      
-                      {idea.tags.length > 0 && (
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <div className="flex items-center">
-                          <Tag className="h-4 w-4 mr-1" />
-                          <div className="flex flex-wrap gap-1">
-                            {idea.tags.slice(0, 3).map((tag) => (
-                              <span key={tag} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {tag}
-                              </span>
-                            ))}
-                            {idea.tags.length > 3 && (
-                              <span className="text-xs text-gray-400">+{idea.tags.length - 3}</span>
-                            )}
+                          <Calendar className="h-4 w-4 mr-1" />
+                          {formatDistanceToNow(new Date(idea.created_at), { 
+                            addSuffix: true, 
+                            locale: ja 
+                          })}
+                        </div>
+                        
+                        {idea.tags.length > 0 && (
+                          <div className="flex items-center">
+                            <Tag className="h-4 w-4 mr-1" />
+                            <div className="flex flex-wrap gap-1">
+                              {idea.tags.slice(0, 3).map((tag) => (
+                                <span key={tag} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  {tag}
+                                </span>
+                              ))}
+                              {idea.tags.length > 3 && (
+                                <span className="text-xs text-gray-400">+{idea.tags.length - 3}</span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      
-                      {idea.related_ideas.length > 0 && (
-                        <div className="flex items-center">
-                          <Link className="h-4 w-4 mr-1" />
-                          {idea.related_ideas.length}個の関連
-                        </div>
-                      )}
+                        )}
+                        
+                        {idea.related_ideas.length > 0 && (
+                          <div className="flex items-center">
+                            <Link className="h-4 w-4 mr-1" />
+                            {idea.related_ideas.length}個の関連
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
@@ -365,6 +429,17 @@ const IdeaList: React.FC<IdeaListProps> = ({
             tags: editingIdea.tags
           } : undefined}
         />
+
+        {/* アイデア統合モーダル */}
+        {showUnification && (
+          <IdeaUnification
+            session={session}
+            ideas={ideas}
+            selectedIdeas={selectedForUnification}
+            onClose={() => setShowUnification(false)}
+            onSuccess={handleUnificationSuccess}
+          />
+        )}
 
         {/* フィルターパネル */}
         <FilterPanel
